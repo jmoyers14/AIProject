@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Kinect;
+using System.Windows.Forms;
+using ConsoleApplication1;
 
 namespace KinectPoints
 {
@@ -66,13 +68,18 @@ namespace KinectPoints
     {
         static void Main(string[] args)
         {
+            /*
+            Application.Run(new ConsoleApplication1.MatchingGame());
+            */
+            Console.WriteLine("We got here!!");
             myKinect prgm = new myKinect();
             prgm.StartKinectSensor();
             while (prgm.index < 5) ;
             for (int i = 0; i < 5; i++)
-               Console.WriteLine("CONFIG: X: {0:g2} Y: {1:g2} Z: {2:g2}", prgm.configData[i].X, prgm.configData[i].Y, prgm.configData[i].Z);
+            Console.WriteLine("CONFIG: X: {0:g2} Y: {1:g2} Z: {2:g2}", prgm.configData[i].X, prgm.configData[i].Y, prgm.configData[i].Z);
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey(true);
+            
         }
     }
 }

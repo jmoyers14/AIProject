@@ -3,3 +3,10 @@ C:\Users\Eric\documents\visual studio 2010\Projects\KinectPoints\KinectPoints\bi
 C:\Users\Eric\documents\visual studio 2010\Projects\KinectPoints\KinectPoints\bin\Debug\KinectPoints.pdb
 C:\Users\Eric\documents\visual studio 2010\Projects\KinectPoints\KinectPoints\obj\x86\Debug\KinectPoints.exe
 C:\Users\Eric\documents\visual studio 2010\Projects\KinectPoints\KinectPoints\obj\x86\Debug\KinectPoints.pdb
+Z:\CPE480\AIProject\KinectPoints\obj\x86\Debug\KinectPoints.exe
+Z:\CPE480\AIProject\KinectPoints\obj\x86\Debug\KinectPoints.pdb
+Z:\CPE480\AIProject\KinectPoints\bin\Debug\KinectPoints.exe
+Z:\CPE480\AIProject\KinectPoints\bin\Debug\KinectPoints.pdb
+Z:\CPE480\AIProject\KinectPoints\obj\x86\Debug\KinectPoints.csprojResolveAssemblyReference.cache
+Z:\CPE480\AIProject\KinectPoints\obj\x86\Debug\ConsoleApplication1.MatchingGame.resources
+Z:\CPE480\AIProject\KinectPoints\obj\x86\Debug\KinectPoints.csproj.GenerateResource.Cache
