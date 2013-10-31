@@ -3,17 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Kinect;
-using System.Windows.Forms;
-using ConsoleApplication1;
 
 namespace KinectPoints
 {
+    static class Constants
+    {
+        public const int frameLength = 100;
+        public const int frameWidth = 100; 
+
+    }
     class myKinect
     {
         KinectSensor kinect;
         Skeleton[] skeletonData;
         public SkeletonPoint[] configData = new SkeletonPoint[5];
         public int index = -1;
+        public Joint rightHand;
 
         public void StartKinectSensor()
         {
@@ -45,12 +50,12 @@ namespace KinectPoints
 
         private void getSkeletonPoints()
         {
-
-            Joint rightHand;
+            Joint tempRight;
             foreach(Skeleton skel in skeletonData) {
-                rightHand = skel.Joints[JointType.HandRight];
-                if (skel.TrackingState == SkeletonTrackingState.Tracked && rightHand.TrackingState == JointTrackingState.Tracked && index < 5)
+                tempRight = skel.Joints[JointType.HandRight];
+                if (skel.TrackingState == SkeletonTrackingState.Tracked && tempRight.TrackingState == JointTrackingState.Tracked && index < 5)
                 {
+                    rightHand = tempRight;
                     if (index != -1)
                     {
                         Console.WriteLine("X: {0:g2} Y: {1:g2} Z: {2:g2}", rightHand.Position.X, rightHand.Position.Y, rightHand.Position.Z);
@@ -59,6 +64,9 @@ namespace KinectPoints
                     System.Threading.Thread.Sleep(5000);
                     index++;
                 }
+                else if (skel.TrackingState == SkeletonTrackingState.Tracked && tempRight.TrackingState == JointTrackingState.Tracked)
+                    rightHand = tempRight;
+
             }
         }
 
@@ -68,18 +76,30 @@ namespace KinectPoints
     {
         static void Main(string[] args)
         {
-            /*
-            Application.Run(new ConsoleApplication1.MatchingGame());
-            */
-            Console.WriteLine("We got here!!");
+            double width, length, depth;
+            int xCoord, yCoord;
             myKinect prgm = new myKinect();
             prgm.StartKinectSensor();
             while (prgm.index < 5) ;
             for (int i = 0; i < 5; i++)
-            Console.WriteLine("CONFIG: X: {0:g2} Y: {1:g2} Z: {2:g2}", prgm.configData[i].X, prgm.configData[i].Y, prgm.configData[i].Z);
+               Console.WriteLine("CONFIG: X: {0:g2} Y: {1:g2} Z: {2:g2}", prgm.configData[i].X, prgm.configData[i].Y, prgm.configData[i].Z);
+            depth = prgm.configData[0].Z;
+            width = prgm.configData[1].Y - prgm.configData[3].Y;
+            length = prgm.configData[4].X - prgm.configData[2].X;
+
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey(true);
-            
+            while (true)
+            {
+                xCoord = (int)(prgm.rightHand.Position.X / length * Constants.frameLength);
+                yCoord = (int)(prgm.rightHand.Position.Y / width * Constants.frameWidth);
+                if (prgm.rightHand.Position.Z <= depth) 
+                { 
+                    //check x and y coord against puzzle object
+
+                }
+
+            }
         }
     }
 }
