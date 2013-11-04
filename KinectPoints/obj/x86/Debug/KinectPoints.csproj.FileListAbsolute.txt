@@ -18,3 +18,10 @@ C:\cygwin\home\Eric\KinectPoints\KinectPoints\obj\x86\Debug\ResolveAssemblyRefer
 C:\cygwin\home\Eric\KinectPoints\KinectPoints\obj\x86\Debug\ConsoleApplication1.MatchingGame.resources
 C:\cygwin\home\Eric\KinectPoints\KinectPoints\obj\x86\Debug\GenerateResource.read.1.tlog
 C:\cygwin\home\Eric\KinectPoints\KinectPoints\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\Tanner\Documents\GitHub\AIProject\KinectPoints\obj\x86\Debug\KinectPoints.exe
+C:\Users\Tanner\Documents\GitHub\AIProject\KinectPoints\obj\x86\Debug\KinectPoints.pdb
+C:\Users\Tanner\Documents\GitHub\AIProject\KinectPoints\bin\Debug\KinectPoints.exe
+C:\Users\Tanner\Documents\GitHub\AIProject\KinectPoints\bin\Debug\KinectPoints.pdb
+C:\Users\Tanner\Documents\GitHub\AIProject\KinectPoints\obj\x86\Debug\KinectPoints.csprojResolveAssemblyReference.cache
+C:\Users\Tanner\Documents\GitHub\AIProject\KinectPoints\obj\x86\Debug\ConsoleApplication1.MatchingGame.resources
+C:\Users\Tanner\Documents\GitHub\AIProject\KinectPoints\obj\x86\Debug\KinectPoints.csproj.GenerateResource.Cache

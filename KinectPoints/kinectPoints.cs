@@ -12,8 +12,8 @@ namespace KinectPoints
 {
     static class Constants
     {
-        public const int frameHeight = 768;
-        public const int frameWidth = 1366;
+        public const int frameHeight = 858;
+        public const int frameWidth = 1525;
 
     }
     class myKinect
@@ -22,7 +22,7 @@ namespace KinectPoints
         Skeleton[] skeletonData;
         public SkeletonPoint[] configData = new SkeletonPoint[5];
         public int index = -1;
-        public Joint leftHand;
+        public Joint hand;
 
         public void StartKinectSensor()
         {
@@ -30,15 +30,26 @@ namespace KinectPoints
             if (kinect.Status == KinectStatus.Connected)
             {
                 kinect.SkeletonStream.Enable();
+                kinect.SkeletonStream.TrackingMode = SkeletonTrackingMode.Seated;
+
+                TransformSmoothParameters smoothingParam = new TransformSmoothParameters();
+                {
+                    smoothingParam.Smoothing = 0.5f;
+                    smoothingParam.Correction = 0.1f;
+                    smoothingParam.Prediction = 0.5f;
+                    smoothingParam.JitterRadius = 0.1f;
+                    smoothingParam.MaxDeviationRadius = 0.1f;
+                };
+
+                kinect.SkeletonStream.Enable(smoothingParam); // Enable skeletal tracking
+
                 skeletonData = new Skeleton[kinect.SkeletonStream.FrameSkeletonArrayLength];
                 kinect.SkeletonFrameReady += new EventHandler<SkeletonFrameReadyEventArgs>(kinect_SkeletonFrameReady);
-                Console.WriteLine("==Configuration==");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey(true);
                 kinect.Start();
             }
             else
-                Console.WriteLine("Error");
+                Console.WriteLine("No Kinect Found");
+
         }
 
         private void kinect_SkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
@@ -55,13 +66,13 @@ namespace KinectPoints
 
         private void getSkeletonPoints()
         {
-            Joint templeft;
+            Joint temp;
             foreach (Skeleton skel in skeletonData)
             {
-                templeft = skel.Joints[JointType.HandLeft];
-                if (skel.TrackingState == SkeletonTrackingState.Tracked && templeft.TrackingState == JointTrackingState.Tracked && index < 3)
+                temp = skel.Joints[JointType.HandRight];
+                if (skel.TrackingState == SkeletonTrackingState.Tracked && temp.TrackingState == JointTrackingState.Tracked && index < 3)
                 {
-                    leftHand = templeft;
+                    hand = temp;
 
                     if (index == -1)
                     {
@@ -70,20 +81,20 @@ namespace KinectPoints
                     }
                     if (index == 0)
                     {
-                        Console.WriteLine("X: {0:g2} Y: {1:g2} Z: {2:g2}", leftHand.Position.X, leftHand.Position.Y, leftHand.Position.Z);
+                        Console.WriteLine("X: {0:g2} Y: {1:g2} Z: {2:g2}", hand.Position.X, hand.Position.Y, hand.Position.Z);
                         Console.WriteLine("Place hand in the bottom left");
-                        configData[index] = leftHand.Position;   
+                        configData[index] = hand.Position;   
                     }
                     if (index == 1)
                     {
-                        Console.WriteLine("X: {0:g2} Y: {1:g2} Z: {2:g2}", leftHand.Position.X, leftHand.Position.Y, leftHand.Position.Z);
-                        Console.WriteLine("Place hand in the bottom right");
-                        configData[index] = leftHand.Position;
+                        Console.WriteLine("X: {0:g2} Y: {1:g2} Z: {2:g2}", hand.Position.X, hand.Position.Y, hand.Position.Z);
+                        Console.WriteLine("Place hand in the top right");
+                        configData[index] = hand.Position;
                     }
                     if (index == 2)
                     {
-                        Console.WriteLine("X: {0:g2} Y: {1:g2} Z: {2:g2}", leftHand.Position.X, leftHand.Position.Y, leftHand.Position.Z);
-                        configData[index] = leftHand.Position;
+                        Console.WriteLine("X: {0:g2} Y: {1:g2} Z: {2:g2}", hand.Position.X, hand.Position.Y, hand.Position.Z);
+                        configData[index] = hand.Position;
                     }
                     
                         
@@ -93,8 +104,8 @@ namespace KinectPoints
 
                     index++;
                 }
-                else if (skel.TrackingState == SkeletonTrackingState.Tracked && templeft.TrackingState == JointTrackingState.Tracked)
-                    leftHand = templeft;
+                else if (skel.TrackingState == SkeletonTrackingState.Tracked && temp.TrackingState == JointTrackingState.Tracked)
+                    hand = temp;
 
             }
         }
@@ -109,12 +120,12 @@ namespace KinectPoints
         private const UInt32 MouseEventLeftDown = 0x0002;
         private const UInt32 MouseEventLeftUp = 0x0004;
 
-        public void SendFirstClick()
+        public void DownClick()
         {
             mouse_event(MouseEventLeftDown, 0, 0, 0, new System.IntPtr());
         }
 
-        public void SendSecondClick()
+        public void UpClick()
         {
             mouse_event(MouseEventLeftUp, 0, 0, 0, new System.IntPtr());
         }
@@ -143,17 +154,25 @@ namespace KinectPoints
         public Vector normalVector, point, line1, line2;
         public double d, height, width;
 
+        //line1 is the line from the top-left corner to bottom-left corner
+        //line2 is the line from the top-left corner to top-right corner
+        //normalVector is a unit vector that is perpendicular to the screen
+        //point is the top-left corner of the screen
+        //d is a constant needed for the plane equation
+        //height is the height of the screen in meters
+        //width is the width of the screen in meters
+
         public myScreen(SkeletonPoint P1, SkeletonPoint P2, SkeletonPoint P3)
         {
             line1 = line(convert(P1), convert(P2));
             line2 = line(convert(P1), convert(P3));
 
             normalVector = cross(line1, line2);
-           // normalVector = normalize(normalVector);
+            normalVector = normalize(normalVector);
             point = convert(P1);
             d = -(dot(normalVector, point));
-            height = distance(convert(P1), convert(P2));
-            width = distance(convert(P2), convert(P3));
+            height = lineLength(line1);
+            width = lineLength(line2);
         }
 
         private Vector convert(SkeletonPoint p)
@@ -176,9 +195,9 @@ namespace KinectPoints
             return new Vector(temp);
         }
 
-        private double distance(Vector P1, Vector P2)
+        private double lineLength(Vector l)
         {
-            return Math.Sqrt(dot(P1, P2));
+            return Math.Sqrt(dot(l, l));
         }
 
         private double dot(Vector P1, Vector P2)
@@ -189,9 +208,9 @@ namespace KinectPoints
         private Vector normalize(Vector v)
         {
             double[] temp = new double[3];
-            temp[0] = v.x / distance(v, v);
-            temp[1] = v.y / distance(v, v);
-            temp[2] = v.z / distance(v, v);
+            temp[0] = v.x / lineLength(v);
+            temp[1] = v.y / lineLength(v);
+            temp[2] = v.z / lineLength(v);
 
             return new Vector(temp);
         }
@@ -213,35 +232,23 @@ namespace KinectPoints
 
         public double getXOnScreen(SkeletonPoint p)
         {
-            /*
-            double[] temp = new double[3];
-            temp[0] = (p.X - point.x) * normalVector.x;
-            temp[1] = (p.Y - point.y) * normalVector.y;
-            temp[2] = (p.Z - point.z) * normalVector.z;
-
-            if (abs(temp[0] + temp[1] + temp[2]) <= 0.05)
-            {
-
-            }
-            */
-
-           
+          
             double distToPoint, theta;
             Vector pointOnPlane, lineToPoint;
 
             double[] temp = new double[3];
-            temp[0] = p.X - dot(normalVector, convert(p)) * normalVector.x;
-            temp[1] = p.Y - dot(normalVector, convert(p)) * normalVector.y;
-            temp[2] = p.Z - dot(normalVector, convert(p)) * normalVector.z;
+            temp[0] = p.X - (dot(normalVector, convert(p)) + d) * normalVector.x;
+            temp[1] = p.Y - (dot(normalVector, convert(p)) + d) * normalVector.y;
+            temp[2] = p.Z - (dot(normalVector, convert(p)) + d) * normalVector.z;
 
             pointOnPlane = new Vector(temp);
 
             lineToPoint = line(point, pointOnPlane);
-            distToPoint = distance(point, pointOnPlane);
+            distToPoint = lineLength(lineToPoint);
 
-            theta = Math.Acos(dot(lineToPoint, line1)/(distToPoint*height));
+            theta = Math.Acos(dot(lineToPoint, line1) / (distToPoint*height));
 
-            return  (distToPoint*Math.Sin(theta))/width;
+            return  (distToPoint*Math.Sin(theta)) / width;
             
         }
 
@@ -251,18 +258,18 @@ namespace KinectPoints
             Vector pointOnPlane, lineToPoint;
 
             double[] temp = new double[3];
-            temp[0] = p.X - dot(normalVector, convert(p)) * normalVector.x;
-            temp[1] = p.Y - dot(normalVector, convert(p)) * normalVector.y;
-            temp[2] = p.Z - dot(normalVector, convert(p)) * normalVector.z;
+            temp[0] = p.X - (dot(normalVector, convert(p)) + d) * normalVector.x;
+            temp[1] = p.Y - (dot(normalVector, convert(p)) + d) * normalVector.y;
+            temp[2] = p.Z - (dot(normalVector, convert(p)) + d) * normalVector.z;
 
             pointOnPlane = new Vector(temp);
 
             lineToPoint = line(point, pointOnPlane);
-            distToPoint = distance(point, pointOnPlane);
+            distToPoint = lineLength(lineToPoint);
 
-            theta = Math.Acos(dot(lineToPoint, line1)/(distToPoint*height));
+            theta = Math.Acos(dot(lineToPoint, line1) / (distToPoint * height));
 
-            return  (distToPoint*Math.Cos(theta))/height;
+            return (distToPoint * Math.Cos(theta)) / height;
         }
     }
 
@@ -288,30 +295,39 @@ namespace KinectPoints
                         
             scrn = new myScreen(prgm.configData[0], prgm.configData[1], prgm.configData[2]);
 
-            Console.WriteLine("Screen plane qualities: Normal Vector: {0:g2}, {1:g2}, {2:g2}", scrn.normalVector.x, scrn.normalVector.y, scrn.normalVector.z);
+            Console.WriteLine("Screen plane qualities- Height: {3:g4} Width: {4:g4} Normal Vector: {0:g4}, {1:g4}, {2:g4}", scrn.normalVector.x, scrn.normalVector.y, scrn.normalVector.z, scrn.height, scrn.width);
 
             Console.WriteLine("Press any key to start application...");
             Console.ReadKey(true);
-            t.Start();
+            //t.Start();
             
             while (true)
             {            
-                xCoord = (int)(scrn.getXOnScreen(prgm.leftHand.Position) * Constants.frameWidth);
-                yCoord = (int)(scrn.getYOnScreen(prgm.leftHand.Position) * Constants.frameHeight);
+                xCoord = (int)(scrn.getXOnScreen(prgm.hand.Position) * Constants.frameWidth);
+                yCoord = (int)(scrn.getYOnScreen(prgm.hand.Position) * Constants.frameHeight);
 
-                //Console.WriteLine("X: {0:g} Y: {1:g}", scrn.getXOnScreen(prgm.leftHand.Position), scrn.getYOnScreen(prgm.leftHand.Position));
-                Console.WriteLine("X: {0:g} Y: {1:g}", xCoord, yCoord);
+                if (xCoord > Constants.frameWidth)
+                    xCoord = Constants.frameWidth;
+                else if (xCoord < 0)
+                    xCoord = 0;
+
+                if (yCoord > Constants.frameWidth)
+                    yCoord = Constants.frameWidth;
+                else if (yCoord < 0)
+                    yCoord = 0;
+
+                Console.WriteLine("X: {0:g} Y: {1:g} Distance to Screen: {2:g}", scrn.getXOnScreen(prgm.hand.Position), scrn.getYOnScreen(prgm.hand.Position), scrn.getDistanceToScreen(prgm.hand.Position));
                 Cursor.Position = new Point(xCoord, yCoord);
-                if (scrn.getDistanceToScreen(prgm.leftHand.Position) < 0.07)
+                if (scrn.getDistanceToScreen(prgm.hand.Position) < 0.01)
                 {
                     //check x and y coord against puzzle object  
                     if(first)
-                        myMouse.SendFirstClick();
+                        myMouse.DownClick();
                     first = false;
                 }
                 else{
                     //while (scrn.getDistanceToScreen(prgm.leftHand.Position) < 0.1) ;
-                    myMouse.SendSecondClick();
+                    myMouse.UpClick();
                     first = true;
                 }
 
